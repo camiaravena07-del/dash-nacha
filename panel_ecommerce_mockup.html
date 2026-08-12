@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Performance E-commerce</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .period-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .period-selector button {
+            padding: 8px 16px;
+            border: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .period-selector button.active {
+            background: white;
+            color: #667eea;
+        }
+
+        /* Content */
+        .content {
+            padding: 30px;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-top: -15px;
+            margin-bottom: 15px;
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            transition: all 0.3s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .kpi-card.blue {
+            border-color: #667eea;
+        }
+
+        .kpi-card.green {
+            border-color: #48bb78;
+        }
+
+        .kpi-card.orange {
+            border-color: #ed8936;
+        }
+
+        .kpi-card.red {
+            border-color: #f56565;
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .kpi-change {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .kpi-change.positive {
+            color: #48bb78;
+        }
+
+        .kpi-change.negative {
+            color: #f56565;
+        }
+
+        /* Glossary */
+        .glossary-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 30px;
+        }
+
+        .glossary-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .glossary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .glossary-item {
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .glossary-item-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .glossary-item-desc {
+            color: #666;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #555;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .channel-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .value-positive {
+            color: #48bb78;
+            font-weight: 500;
+        }
+
+        .value-negative {
+            color: #f56565;
+            font-weight: 500;
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-top: 4px solid #667eea;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 10px;
+        }
+
+        .badge-green {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge-orange {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>📊 Panel Performance E-commerce</h1>
+            </div>
+            <div class="period-selector">
+                <button class="active">Hoy</button>
+                <button>Semana</button>
+                <button>Mes</button>
+                <button>Año</button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- PARTE I: Resumen General -->
+            <div class="section-title">
+                PARTE I: Resumen General
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card blue">
+                    <div class="kpi-label">Sesiones</div>
+                    <div class="kpi-value">581.73K</div>
+                    <div class="kpi-change positive">↑ +12.5% vs LY</div>
+                </div>
+                <div class="kpi-card green">
+                    <div class="kpi-label">Ingresos</div>
+                    <div class="kpi-value">$2.25M</div>
+                    <div class="kpi-change positive">↑ +18.3% vs LY</div>
+                </div>
+                <div class="kpi-card orange">
+                    <div class="kpi-label">Inversión</div>
+                    <div class="kpi-value">$128.4K</div>
+                    <div class="kpi-change positive">↑ +5.2% vs LY</div>
+                </div>
+                <div class="kpi-card green">
+                    <div class="kpi-label">ROAS Sitio</div>
+                    <div class="kpi-value">14.21</div>
+                    <div class="kpi-change positive">↑ +8.1% vs LY</div>
+                </div>
+                <div class="kpi-card blue">
+                    <div class="kpi-label">Transacciones</div>
+                    <div class="kpi-value">52.29K</div>
+                    <div class="kpi-change positive">↑ +15.7% vs LY</div>
+                </div>
+                <div class="kpi-card green">
+                    <div class="kpi-label">Ticket Promedio</div>
+                    <div class="kpi-value">$43.01</div>
+                    <div class="kpi-change positive">↑ +2.8% vs LY</div>
+                </div>
+                <div class="kpi-card orange">
+                    <div class="kpi-label">CPA</div>
+                    <div class="kpi-value">$2.45</div>
+                    <div class="kpi-change positive">↑ -3.2% vs LY</div>
+                </div>
+                <div class="kpi-card red">
+                    <div class="kpi-label">CTR</div>
+                    <div class="kpi-value">3.48%</div>
+                    <div class="kpi-change positive">↑ +0.4% vs LY</div>
+                </div>
+            </div>
+
+            <!-- Glossary -->
+            <div class="glossary-box">
+                <div class="glossary-title">📖 GLOSARIO DE MÉTRICAS</div>
+                <div class="glossary-grid">
+                    <div class="glossary-item">
+                        <div class="glossary-item-title">ROAS</div>
+                        <div class="glossary-item-desc">Retorno sobre la inversión publicitaria (Ingresos/Inversión)</div>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-item-title">CPA</div>
+                        <div class="glossary-item-desc">Costo de adquisición de clientes (Inversión/Transacciones)</div>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-item-title">CTR</div>
+                        <div class="glossary-item-desc">Tasa de clics (Clics/Impresiones)</div>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-item-title">TC</div>
+                        <div class="glossary-item-desc">Tasa de conversión (Transacciones/Sesiones)</div>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-item-title">CPC</div>
+                        <div class="glossary-item-desc">Costo por clic (Inversión/Clics)</div>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-item-title">TC Promedio</div>
+                        <div class="glossary-item-desc">Ticket promedio (Ingresos/Transacciones)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PARTE II: Detalle por Canales -->
+            <div class="section-title">
+                PARTE II: Detalle por Canales/Fuente
+            </div>
+            <div class="section-subtitle">
+                TY (This Year) vs LY (Last Year) - Variación (Δ)
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Canal/Fuente</th>
+                            <th>Sesiones TY</th>
+                            <th>Sesiones LY</th>
+                            <th>Δ %</th>
+                            <th>Ingresos TY</th>
+                            <th>Ingresos LY</th>
+                            <th>Δ %</th>
+                            <th>TC %</th>
+                            <th>ROAS</th>
+                            <th>CPA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="channel-name">🔗 Direct</td>
+                            <td>145,230</td>
+                            <td>128,450</td>
+                            <td class="value-positive">+13.1%</td>
+                            <td>$892,340</td>
+                            <td>$756,200</td>
+                            <td class="value-positive">+18.0%</td>
+                            <td>2.15%</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td class="channel-name">🔍 Organic Search</td>
+                            <td>289,450</td>
+                            <td>256,340</td>
+                            <td class="value-positive">+12.9%</td>
+                            <td>$1,245,670</td>
+                            <td>$1,052,300</td>
+                            <td class="value-positive">+18.4%</td>
+                            <td>2.78%</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td class="channel-name">💰 Paid Search</td>
+                            <td>89,230</td>
+                            <td>75,630</td>
+                            <td class="value-positive">+17.9%</td>
+                            <td>$456,780</td>
+                            <td>$389,450</td>
+                            <td class="value-positive">+17.3%</td>
+                            <td>4.23%</td>
+                            <td>8.45</td>
+                            <td>$2.14</td>
+                        </tr>
+                        <tr>
+                            <td class="channel-name">📱 Paid Social</td>
+                            <td>42,340</td>
+                            <td>38,120</td>
+                            <td class="value-positive">+11.1%</td>
+                            <td>$189,560</td>
+                            <td>$156,340</td>
+                            <td class="value-positive">+21.2%</td>
+                            <td>3.45%</td>
+                            <td>6.78</td>
+                            <td>$3.21</td>
+                        </tr>
+                        <tr>
+                            <td class="channel-name">🛒 Paid Shopping</td>
+                            <td>12,560</td>
+                            <td>9,340</td>
+                            <td class="value-positive">+34.5%</td>
+                            <td>$98,450</td>
+                            <td>$67,230</td>
+                            <td class="value-positive">+46.4%</td>
+                            <td>5.89%</td>
+                            <td>12.34</td>
+                            <td>$1.87</td>
+                        </tr>
+                        <tr>
+                            <td class="channel-name">📧 Email</td>
+                            <td>18,230</td>
+                            <td>15,670</td>
+                            <td class="value-positive">+16.3%</td>
+                            <td>$156,340</td>
+                            <td>$134,560</td>
+                            <td class="value-positive">+16.2%</td>
+                            <td>5.21%</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PARTE III: Gráficos -->
+            <div class="section-title">
+                PARTE III: Gráficos
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">Peso Canales 2026 (Sesiones)</div>
+                    <div class="chart-container">
+                        <canvas id="chartCanal2026"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-title">Peso Canales 2025 (Sesiones)</div>
+                    <div class="chart-container">
+                        <canvas id="chartCanal2025"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-title">Ingresos por Plataforma (TY vs LY)</div>
+                    <div class="chart-container">
+                        <canvas id="chartIngresos"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-title">Tendencia Sesiones - Últimas 12 Semanas</div>
+                    <div class="chart-container">
+                        <canvas id="chartTendencia"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PARTE IV: Medios Pagados -->
+            <div class="section-title">
+                PARTE IV: Resumen Performance Paid Media
+            </div>
+            <div class="section-subtitle">
+                Inversión, Ingresos y ROAS por Plataforma Principal
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Plataforma</th>
+                            <th>Inversión TY</th>
+                            <th>Inversión LY</th>
+                            <th>Δ %</th>
+                            <th>Ingresos TY</th>
+                            <th>Ingresos LY</th>
+                            <th>Δ %</th>
+                            <th>ROAS TY</th>
+                            <th>ROAS LY</th>
+                            <th>Δ %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="channel-name">🔵 Google CPC</td>
+                            <td>$45,230</td>
+                            <td>$38,560</td>
+                            <td class="value-positive">+17.3%</td>
+                            <td>$412,560</td>
+                            <td>$345,670</td>
+                            <td class="value-positive">+19.3%</td>
+                            <td>9.12</td>
+                            <td>8.96</td>
+                            <td class="value-positive">+1.8%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 40px;">→ Paid Search</td>
+                            <td>$28,450</td>
+                            <td>$24,670</td>
+                            <td class="value-positive">+15.3%</td>
+                            <td>$286,340</td>
+                            <td>$239,560</td>
+                            <td class="value-positive">+19.5%</td>
+                            <td>10.05</td>
+                            <td>9.71</td>
+                            <td class="value-positive">+3.5%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 40px;">→ Pmax</td>
+                            <td>$12,340</td>
+                            <td>$10,230</td>
+                            <td class="value-positive">+20.6%</td>
+                            <td>$98,450</td>
+                            <td>$78,340</td>
+                            <td class="value-positive">+25.7%</td>
+                            <td>7.97</td>
+                            <td>7.65</td>
+                            <td class="value-positive">+4.2%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 40px;">→ Paid Shopping</td>
+                            <td>$4,440</td>
+                            <td>$3,660</td>
+                            <td class="value-positive">+21.3%</td>
+                            <td>$27,770</td>
+                            <td>$27,770</td>
+                            <td class="value-positive">0%</td>
+                            <td>6.25</td>
+                            <td>7.59</td>
+                            <td class="value-negative">-17.7%</td>
+                        </tr>
+                        <tr>
+                            <td class="channel-name">📱 Paid Social</td>
+                            <td>$52,340</td>
+                            <td>$45,670</td>
+                            <td class="value-positive">+14.5%</td>
+                            <td>$289,560</td>
+                            <td>$234,560</td>
+                            <td class="value-positive">+23.4%</td>
+                            <td>5.53</td>
+                            <td>5.14</td>
+                            <td class="value-positive">+7.6%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 40px;">→ VC RMKT</td>
+                            <td>$28,670</td>
+                            <td>$25,340</td>
+                            <td class="value-positive">+13.2%</td>
+                            <td>$156,340</td>
+                            <td>$128,450</td>
+                            <td class="value-positive">+21.7%</td>
+                            <td>5.45</td>
+                            <td>5.07</td>
+                            <td class="value-positive">+7.5%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 40px;">→ VC LAL</td>
+                            <td>$23,670</td>
+                            <td>$20,330</td>
+                            <td class="value-positive">+16.4%</td>
+                            <td>$133,220</td>
+                            <td>$106,110</td>
+                            <td class="value-positive">+25.5%</td>
+                            <td>5.63</td>
+                            <td>5.22</td>
+                            <td class="value-positive">+7.9%</td>
+                        </tr>
+                        <tr>
+                            <td class="channel-name">🎵 TikTok</td>
+                            <td>$18,450</td>
+                            <td>$12,340</td>
+                            <td class="value-positive">+49.5%</td>
+                            <td>$98,340</td>
+                            <td>$56,780</td>
+                            <td class="value-positive">+73.2%</td>
+                            <td>5.32</td>
+                            <td>4.60</td>
+                            <td class="value-positive">+15.7%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PARTE V: Creatividades -->
+            <div class="section-title">
+                PARTE V: Análisis de Creatividades
+            </div>
+            <div class="section-subtitle">
+                Rendimiento de mejores creatividades por métrica
+            </div>
+
+            <!-- Best Performers Summary -->
+            <div class="kpi-grid" style="margin-bottom: 30px;">
+                <div class="kpi-card blue">
+                    <div class="kpi-label">🏆 Mejor CTR Creativo</div>
+                    <div class="kpi-value">9.83%</div>
+                    <div class="kpi-change positive">Promedio: 4.2%</div>
+                </div>
+                <div class="kpi-card green">
+                    <div class="kpi-label">🏆 Mejor ROAS Creativo</div>
+                    <div class="kpi-value">68.40</div>
+                    <div class="kpi-change positive">Promedio: 36</div>
+                </div>
+                <div class="kpi-card orange">
+                    <div class="kpi-label">🏆 Mejor TC Creativo</div>
+                    <div class="kpi-value">1.32%</div>
+                    <div class="kpi-change positive">Promedio: 0.5%</div>
+                </div>
+                <div class="kpi-card blue">
+                    <div class="kpi-label">💪 Concentración Ventas</div>
+                    <div class="kpi-value">18%</div>
+                    <div class="kpi-change positive">Del total Paid Social</div>
+                </div>
+            </div>
+
+            <!-- Análisis Detallado de Creatividades -->
+            <div style="margin-bottom: 30px;">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #333;">Creatividades Analizadas - Rendimiento Detallado</h3>
+
+                <!-- Creatividad 1: Mayor CTR -->
+                <div style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; align-items: start;">
+                        <div>
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; height: 300px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; overflow: hidden; position: relative;">
+                                <div style="color: white; text-align: center; font-size: 48px; position: absolute;">
+                                    👗
+                                </div>
+                                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.4); color: white; padding: 10px; font-size: 12px; font-weight: 600;">Creativo A - Carrusel</div>
+                            </div>
+                            <div style="font-size: 13px; color: #666; text-align: center;">
+                                <strong>Formato:</strong> Carrusel<br/>
+                                <strong>Plataforma:</strong> Facebook/Instagram
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: #333; font-size: 14px; font-weight: 600;">📊 MÉTRICAS - Mejor CTR</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #667eea;">
+                                    <div style="font-size: 11px; color: #888; text-transform: uppercase;">CTR</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #667eea;">9.83%</div>
+                                    <div style="font-size: 11px; color: #48bb78;">vs Promedio 4.2%</div>
+                                </div>
+                                <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #764ba2;">
+                                    <div style="font-size: 11px; color: #888; text-transform: uppercase;">Impresiones</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #764ba2;">245.8K</div>
+                                    <div style="font-size: 11px; color: #666;">Mayor alcance</div>
+                                </div>
+                                <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #48bb78;">
+                                    <div style="font-size: 11px; color: #888; text-transform: uppercase;">ROAS</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #48bb78;">45.60</div>
+                                    <div style="font-size: 11px; color: #666;">ROI Sólido</div>
+                                </div>
+                                <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #ed8936;">
+                                    <div style="font-size: 11px; color: #888; text-transform: uppercase;">TC</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #ed8936;">5.83%</div>
+                                    <div style="font-size: 11px; color: #48bb78;">vs Promedio 0.5%</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 15px; padding: 12px; background: white; border-radius: 6px; border-left: 3px solid #f56565;">
+                                <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px;">Principales Atributos</div>
+                                <div style="font-size: 13px; color: #333; line-height: 1.6;">✓ Imágenes de producto destacadas<br/>✓ Colores vibrantes y llamativos<br/>✓ Formato carrusel con variedad<br/>✓ CTA claro y directo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Creatividad 2: Mayor ROAS -->
+                <div style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #48bb78;">
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; align-items: start;">
+                        <div>
+                            <div style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); border-radius: 8px; height: 300px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; overflow: hidden; position: relative;">
+                                <div style="color: white; text-align: center; font-size: 48px; position: absolute;">
+                                    💄
+                                </div>
+                                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.4); color: white; padding: 10px; font-size: 12px; font-weight: 600;">Creativo B - Video</div>
+                            </div>
+                            <div style="font-size: 13px; color: #666; text-align: center;">
+                                <strong>Formato:</strong> Video<br/>
+                                <strong>Plataforma:</strong> TikTok
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: #333; font-size: 14px; font-weight: 600;">📊 MÉTRICAS - Mejor ROAS</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #48bb78;">
+                                    <div style="font-size: 11px; color: #888; text-transform: uppercase;">ROAS</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #48bb78;">68.40</div>
+                                    <div style="font-size: 11px; color: #48bb78; font-weight: 600;">+90% vs Promedio</div>
+                                </div>
+                                <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #667eea;">
+                                    <div style="font-size: 11px; color: #888; text-transform: uppercase;">CTR</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #667eea;">8.45%</div>
+                                    <div style="font-size: 11px; color: #666;">Muy buena retención</div>
+                                </div>
+                                <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #764ba2;">
+                                    <div style="font-size: 11px; color: #888; text-transform: uppercase;">Inversión</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #764ba2;">$18.2K</div>
+                                    <div style="font-size: 11px; color: #666;">Inversión moderada</div>
+                                </div>
+                                <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #ed8936;">
+                                    <div style="font-size: 11px; color: #888; text-transform: uppercase;">Ingresos Generados</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #ed8936;">$1.24M</div>
+                                    <div style="font-size: 11px; color: #48bb78; font-weight: 600;">Mayor retorno</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 15px; padding: 12px; background: white; border-radius: 6px; border-left: 3px solid #f56565;">
+                                <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px;">Principales Atributos</div>
+                                <div style="font-size: 13px; color: #333; line-height: 1.6;">✓ Formato video corto (15-30s)<br/>✓ Audio cautivador<br/>✓ Testimonios de clientes<br/>✓ Urgencia y descuento claro</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Creatividad 3: Mayor TC -->
+                <div style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ed8936;">
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; align-items: start;">
+                        <div>
+                            <div style="background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); border-radius: 8px; height: 300px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; overflow: hidden; position: relative;">
+                                <div style="color: white; text-align: center; font-size: 48px; position: absolute;">
+                                    ✨
+                                </div>
+                                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.4); color: white; padding: 10px; font-size: 12px; font-weight: 600;">Creativo C - Estático</div>
+                            </div>
+                            <div style="font-size: 13px; color: #666; text-align: center;">
+                                <strong>Formato:</strong> Estático<br/>
+                                <strong>Plataforma:</strong> Google Ads
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: #333; font-size: 14px; font-weight: 600;">📊 MÉTRICAS - Mayor Tasa de Conversión</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #ed8936;">
+                                    <div style="font-size: 11px; color: #888; text-transform: uppercase;">TC</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #ed8936;">1.32%</div>
+                                    <div style="font-size: 11px; color: #48bb78; font-weight: 600;">+164% vs Promedio</div>
+                                </div>
+                                <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #48bb78;">
+                                    <div style="font-size: 11px; color: #888; text-transform: uppercase;">Conversiones</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #48bb78;">8.2K</div>
+                                    <div style="font-size: 11px; color: #666;">Alta conversión</div>
+                                </div>
+                                <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #667eea;">
+                                    <div style="font-size: 11px; color: #888; text-transform: uppercase;">CPA</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #667eea;">$1.87</div>
+                                    <div style="font-size: 11px; color: #48bb78;">Más eficiente</div>
+                                </div>
+                                <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #764ba2;">
+                                    <div style="font-size: 11px; color: #888; text-transform: uppercase;">ROAS</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #764ba2;">42.15</div>
+                                    <div style="font-size: 11px; color: #666;">Muy rentable</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 15px; padding: 12px; background: white; border-radius: 6px; border-left: 3px solid #f56565;">
+                                <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px;">Principales Atributos</div>
+                                <div style="font-size: 13px; color: #333; line-height: 1.6;">✓ Copy minimalista y directo<br/>✓ Imagen de alta calidad<br/>✓ Oferta clara y promoción visible<br/>✓ CTA tipo "Comprar Ahora"</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos comparativos -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">Creatividades con Mayor CTR</div>
+                    <div class="chart-container">
+                        <canvas id="chartCTRCreative"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-title">Creatividades con Mayor ROAS</div>
+                    <div class="chart-container">
+                        <canvas id="chartROASCreative"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chartColors = {
+            primary: '#667eea',
+            secondary: '#764ba2',
+            success: '#48bb78',
+            warning: '#ed8936',
+            danger: '#f56565',
+            light: '#e2e8f0',
+            bg: '#f8f9fa'
+        };
+
+        // Chart 1: Peso Canales 2026
+        const ctx1 = document.getElementById('chartCanal2026').getContext('2d');
+        new Chart(ctx1, {
+            type: 'doughnut',
+            data: {
+                labels: ['Organic Search', 'Direct', 'Paid Search', 'Email', 'Paid Social', 'Otros'],
+                datasets: [{
+                    data: [35.2, 22.1, 13.6, 2.8, 6.5, 19.8],
+                    backgroundColor: [
+                        '#667eea', '#764ba2', '#ed8936', '#48bb78', '#f56565', '#cbd5e0'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { size: 12 },
+                            padding: 15,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 2: Peso Canales 2025
+        const ctx2 = document.getElementById('chartCanal2025').getContext('2d');
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['Organic Search', 'Direct', 'Paid Search', 'Email', 'Paid Social', 'Otros'],
+                datasets: [{
+                    data: [32.1, 24.5, 11.2, 3.1, 5.2, 23.9],
+                    backgroundColor: [
+                        '#667eea', '#764ba2', '#ed8936', '#48bb78', '#f56565', '#cbd5e0'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { size: 12 },
+                            padding: 15,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 3: Ingresos por Plataforma
+        const ctx3 = document.getElementById('chartIngresos').getContext('2d');
+        new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: ['Google CPC', 'Paid Social', 'Direct', 'Organic', 'Email', 'Otros'],
+                datasets: [
+                    {
+                        label: 'TY',
+                        data: [412, 289, 892, 1245, 156, 278],
+                        backgroundColor: '#667eea',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'LY',
+                        data: [345, 234, 756, 1052, 134, 234],
+                        backgroundColor: '#cbd5e0',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: false,
+                        grid: { color: '#e2e8f0' }
+                    }
+                }
+            }
+        });
+
+        // Chart 4: Tendencia Sesiones
+        const ctx4 = document.getElementById('chartTendencia').getContext('2d');
+        new Chart(ctx4, {
+            type: 'line',
+            data: {
+                labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8', 'Sem 9', 'Sem 10', 'Sem 11', 'Sem 12'],
+                datasets: [{
+                    label: 'Sesiones 2026',
+                    data: [45000, 48000, 46000, 52000, 54000, 57000, 59000, 61000, 58000, 62000, 64000, 65000],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: '#e2e8f0' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // Chart 5: CTR Creatividades
+        const ctx5 = document.getElementById('chartCTRCreative').getContext('2d');
+        new Chart(ctx5, {
+            type: 'bar',
+            data: {
+                labels: ['Creativo A', 'Creativo B', 'Creativo C', 'Creativo D', 'Creativo E'],
+                datasets: [{
+                    label: 'CTR %',
+                    data: [9.83, 8.45, 7.21, 6.54, 5.89],
+                    backgroundColor: '#667eea',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { color: '#e2e8f0' }
+                    }
+                }
+            }
+        });
+
+        // Chart 6: ROAS Creatividades
+        const ctx6 = document.getElementById('chartROASCreative').getContext('2d');
+        new Chart(ctx6, {
+            type: 'bar',
+            data: {
+                labels: ['Creativo A', 'Creativo B', 'Creativo C', 'Creativo D', 'Creativo E'],
+                datasets: [{
+                    label: 'ROAS',
+                    data: [68.40, 54.20, 48.15, 42.30, 38.50],
+                    backgroundColor: '#48bb78',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { color: '#e2e8f0' }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
